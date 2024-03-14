@@ -1,16 +1,208 @@
 # flutter_flirting
 
-A new Flutter project.
+## Intro
 
-## Getting Started
+플러터 플러팅 두 번째 세션, 화면에 위젯 그리기 세션입니다.
 
-This project is a starting point for a Flutter application.
+플러터에는 이런말이 있죠.
 
-A few resources to get you started if this is your first Flutter project:
+> 모든 것은 위젯이다
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+그렇습니다.
+화면에 뿌려지는 모든 것은 `위젯`입니다.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+그 만큼 종류도 아주 다양한데요,
+얼마나 다양하냐면 이런 위젯이 있으면 좋겠다 싶어서 자체 구현했는데, 찾아보니 그런 기능을 제공하는 위젯이 이미 있을 정도로 숨겨진 위젯도 정말 많습니다.
+
+이번 시간에는 이렇게 다양한 위젯 중에서 이거 없으면 못살거 같은 대표적인 위젯만 사용해서 화면을 어떻게 꾸미는지 알아보고, 위젯 트리 구조가 어떤식으로 생겼는지 알아보겠습니다.
+
+## 위젯
+
+위젯은 간단하게 말하면 **UI를 그리는데 필요한 데이터를 담고있는 클래스** 입니다.
+
+따라서 클래스 생성자 부분에 위젯을 어떻게 그릴 지를 파라미터로서 전달하면, 해당 위젯 클래스는 전달받은 인자를 이용해 화면을 그리게 되는 것입니다.
+
+복잡한 화면의 경우에는 여러 위젯을 중첩시키는 방식으로 그릴 수 있기 때문에 대부분의 플러터 UI 코드 부분은 depth가 깊게 들어가는 경우가 비일비재 합니다.
+
+## Scaffold
+
+첫 번째는 `Scaffold` 위젯입니다.
+
+이 위젯은 일동의 모바일 UI의 `도화지` 역할을 수행하는 위젯으로, 모든 화면의 최 상단에는 이 위젯이 있어야 할 정도입니다.
+
+이 위젯이 없다면, 검은 화면에 붉은 색 글자에 노란 밑줄로 뭔가 디버깅 하는 듯한 화면을 보실 수 있을 겁니다.
+
+`Scaffold`의 주요 파라미터는 다음과 같습니다.
+
+- appBar
+
+  화면의 상단(앱 바) 부분에 들어갈 위젯을 받는 파라미터 입니다.
+
+  여기에 넣는 위젯은 앱 화면의 최상단에 배치되게 됩니다.
+
+  보통 `AppBar` 라는 위젯을 넣습니다.
+
+- body
+
+  화면의 몸통 부분에 들어갈 위젯을 받는 파라미터 입니다.
+
+  화면에 그리고자 하는 위젯을 여기에 배치하면 됩니다.
+
+이 외에도 도화지의 배경 색을 바꾼다던지, 하단에 네비게이션 바를 배치한다던지 제공하는 파라미터는 많으니 상황에 따라 추가로 알아보고 사용하시면 될 거 같습니다.
+
+## Column / Row
+
+두 번째는 `Column`, `Row` 위젯입니다.
+
+이 위젯은 이름에서도 알 수 있듯이 자식 위젯들(`children`)을 세로방향 / 가로방향으로 나열하여 배치해주는 위젯입니다.
+
+거의 대부분의 화면 레이아웃을 Column, Row 위젯을 중첩하는 방식으로 구현하기 때문에 이 위젯의 사용에 친숙해지는 것이 좋습니다.
+
+`Column` / `Row` 의 주요 파라미터는 다음과 같습니다.
+
+- children
+
+  나열(배치)할 위젯들을 받는 파라미터 입니다.
+
+  위젯을 배열안에 넣는 방식으로 전달 받습니다.
+
+  주의할 점은 자식 위젯의 크기가 나열 방향으로 무제한이 될 경우 화면을 그리지 못하고 에러가 발생하게 됩니다.
+
+- mainAxisAlignment
+
+  나열 방향으로의 위젯 정렬을 결정하는 파라미터 입니다.
+
+  예로 들어 `MainAxisAlignment.spaceBetween`과 같이 지정한다면 나열 방향으로 위젯 사이사이(between)에 동일한 공간(space)를 배치하여 화면을 꽉 채운다는 의미입니다.
+
+  필요에 따라 이것저것 넣어보면서 배치가 어떻게 되는지 눈으로 보면서 이해해봅시다.
+
+  주의할 점은 `Column`, `Row` 에 따라 배치 방향이 달라진다는 점 입니다.
+  (**나열 방향의 주 방향** 이라고 기억하면 편합니다)
+
+- crossAxisAlignment
+
+  mainAxis의 수직 방향으로의 나열 방법을 지정합니다.
+
+  사용 방법과 주의사항은 위와 동일합니다.
+
+## Stack
+
+세 번째는 `Stack` 위젯입니다.
+
+`Column`, `Row`는 가로, 세로 방향으로 위젯들을 나열했다면, `Stack`은 높이 방향으로 위젯을 나열합니다.
+
+`Stack`의 주요 파라미터는 다음과 같습니다.
+
+- children
+
+  `Column`, `Row`와 마찬가지로 배치할 위젯들을 배열의 형태로 전달합니다.
+
+- alignment
+
+  자식 위젯들(`children`)을 어떻게 정렬할 지 결정합니다.
+
+  예로 들어 `Alignment.center` 로 지정한다면 자식들이 모두 가운데로 정렬되어 쌓이게(stack)됩니다.
+
+  팁으로, 자식 개별적으로 정렬을 지정하고 싶다면 자식 위젯을 각각 `Align` 이라는 위젯으로 감싸주면 됩니다.
+
+## Container / SizedBox
+
+`Container`, `Sizedbox` 모두 html의 div 격에 해당하는 위젯입니다.
+~~(숫자 세는거 포기)~~
+
+부담없이 자식 위젯을 감쌀 수 있으며 모두 가로, 세로의 크기를 할당할 수 있습니다.
+
+다만, `Sizedbox`는 말 그대로 **사이즈만 할당**할 수 있는 박스이며,
+박스에 색상과 같은 **추가적인 디자인**을 입히고 싶다면 `Container`를 사용하면 됩니다.
+
+`Container`의 주요 파라미터는 다음과 같습니다.
+(`SizedBox`는 여기서 `child`, `width` / `height` 만 갖습니다)
+
+- child
+
+  이 박스의 안에 들어갈 위젯(자식 위젯)을 전달합니다.
+
+- width / height
+
+  이 박스의 가로 / 세로 크기를 지정합니다.
+
+  만약 화면을 꽉 채우고 싶다면 `double.infinite` 와 같은 값을 전달하면 됩니다.
+
+  하지만, 박스의 부모가 `Row`, `Column` 이 오는 경우, 부모 위젯의 메인 축 방향으로 무한의 크기를 지정하면 안 됩니다.
+
+- decoration
+
+  `Container`를 디자인 할 수 있는 파라미터 입니다.
+
+  `BoxDecoration` 위젯을 인자로 전달하며, `BoxDecoration`의 파라미터를 지정하며 해당 `Container`를 꾸밀 수 있습니다.
+
+- padding / margin
+
+  `Container` 의 내부 / 외부로 빈 공간을 할당하는 파라미터 입니다.
+
+  `EdgeInsect` 위젯을 인자로 전달해야 합니다.
+
+## Text
+
+문자열을 화면에 표시할 수 있게 해주는 위젯입니다.
+
+이 위젯은 특이(?)하게 파라미터가 없이(`unnamed parameter`) 문자열을 전달합니다.
+
+`Text`의 주요 파라미터는 다음과 같습니다.
+
+- style
+
+  `Text`의 스타일을 지정할 수 있습니다.
+
+  `TextStyle` 위젯을 인자로 전달하며, `TextStyle`의 파라미터를 지정하며 해당 `Text`를 꾸밀 수 있습니다.
+
+## Padding
+
+`Contaier` 에서는 파라미터로 `padding`을 지원했지만, 지원하지 않는 위젯의 경우에는 해당 위젯을 `Padding` 위젯으로 감싸주면 됩니다.
+
+`Padding`의 주요 파라미터는 다음과 같습니다.
+
+- child
+
+  `padding`을 주고자 하는 위젯을 넣어주면 됩니다.
+
+- padding
+
+  얼마나 공간(`padding`)을 줄지 지정하는 파라미터 입니다.
+
+  `EdgeInsect` 위젯을 전달해야 합니다.
+
+## SingleChildScrollView
+
+이름이 길지만 그 뜻은 명확합니다.
+
+세로(혹은 가로) 방향으로 배치되는 위젯이 너무 많아 기기 화면을 벗어날 경우 스크롤 기능을 지원해야 하는데, 이 위젯이 그 기능을 담당하게 됩니다.
+
+크기가 매우 큰 단일 위젯의 경우 `SingleChildScrollView` 내부에서 스크롤 할 수 있게 해줍니다.
+
+`SingleChildScrollView`의 주요 파라미터는 다음과 같습니다.
+
+- child
+
+  스크롤 하고자 하는 위젯을 인자로 전달합니다.
+
+  단, 위젯의 크기는 스크롤 방향으로 유한(계산 / 유추 가능)해야 합니다.
+
+- scrollDirection
+
+  스크롤 방향을 지정하는 파라미터 입니다.
+
+  `Axis`를 인자로 전달해야 하며 기본 값은 `Axis.vertical` 입니다.
+
+  따라서 `Column` 같이 세로로 긴 위젯을 스크롤 할 경우에는 이 파라미터가 필요 없지만,
+  `Row` 같이 가로로 긴 위젯을 스크롤 하기 위해서는 `Axis.horizontal`을 전달해야만 합니다.
+
+## 마무리
+
+여기까지 가장 많이 사용되는 위젯들에 대해 알아봤습니다.
+
+이 위젯은 플러터에서 제공하는 위젯의 1%도 안되지만, 화면 구성의 50% 이상을 차지한다고 봐도 과언이 아닐 정도로 자주 사용하는 위젯들 입니다.
+
+따라서 이 위젯들의 사용에 익숙해진다면 성능은 떨어질지 몰라도, 원하는 거의 모든 화면을 구현할 수 있을 것입니다.
+
+부디 이 위젯들을 많이 사용해보시고, 플러터의 위젯 트리 구조가 왜 이렇게 생겼는지 손가락으로 느껴보셨으면 좋겠습니다.
