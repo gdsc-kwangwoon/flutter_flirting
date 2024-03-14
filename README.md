@@ -1,16 +1,136 @@
 # flutter_flirting
 
-A new Flutter project.
+## Intro
 
-## Getting Started
+플러터 플러팅 세 번째 세션, `Stateful` 위젯 세션입니다.
 
-This project is a starting point for a Flutter application.
+지난 세션에는 `Stateless` 위젯으로 화면에 그리는 연습을 해봤다면,
+이번 세션에는 `Stateful` 위젯으로 위젯의 상태관리 연습을 해볼겁니다.
 
-A few resources to get you started if this is your first Flutter project:
+## Life cycle
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+`Stateless` 위젯은 상태 주기.. 라 불리는게 민망할 정도로 간단하게 생겼습니다.
+상태라는 것이 없(state-less)기 때문에 build만 하면 끝이기 때문이죠.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+하지만, Stateful 위젯은 상태를 갖(state-ful)기 때문에 상태에 따른 생명 주기를 갖습니다.
+
+우선 `Stateful`의 상태 주기를 이미지로 먼저 보겠습니다.
+
+![widget_lifecycle](https://file.notion.so/f/f/bf4a1713-7abc-4e17-a00e-9740da585aa1/a74e9250-76b0-4c83-916c-b46477c7263d/widget_lifecycle.png?id=2e5581a3-5809-447c-9218-4faacf535258&table=block&spaceId=bf4a1713-7abc-4e17-a00e-9740da585aa1&expirationTimestamp=1710518400000&signature=ov3xgCqAq10q5Q6oUlWBKZaHPdupn9pxIF8VzJOfmL8&downloadName=widget_lifecycle.png)
+
+Stateless, ful 위젯은 `build()` 함수가 호출되는 시점이 다릅니다.
+
+> build함수 실행시점에 위젯이 화면에 그려지게(랜더링) 됩니다.
+
+`Stateless`는 **생성자가 호출되는 시점**에 build함수가 호출되고,
+부모 위젯이 리랜더링 되지 않는 한 다시 호출되지 않습니다.
+
+반면에 `Stateful`은 생성자가 호출되는 시점에 build함수가 호출되는게 아닌, 상태 객체를 위젯 트리에 등록하게 됩니다.
+그리고 그 **상태 객체가 dirty 상태일 때** build함수가 호출되는 것이죠.
+
+> dirty 상태란 단순히 뭔가(상태)가 변해서 다시 build 해야 하는 상태라고 이해하면 될 거 같습니다.
+
+<br />
+
+즉, 둘의 차이점은 상태도 있지만, 랜더링 수단의 차이도 있다고 볼 수 있습니다. (제 개인적인 생각입니다)
+
+`Stateless`는 생성자 호출 시점에 build함수가 실행되기 때문에,
+
+1. 부모 위젯이 리랜더링 되면 생성자가 다시 호출되어 다시 build 되게 됩니다.
+
+반면 `Stateful`은 상태 객체가 dirty 상태일 때 build함수가 실행되기 때문에,
+
+1. 부모 위젯이 리랜더링 되면 생성자가 다시 호출되어 다시 build 될 뿐만 아니라,
+2. 상태 객체를 dirty 상태로 만드는 것으로 다시 build 할 수도 있습니다.
+
+<br />
+
+그렇다면, 상태 객체를 dirty 상태로 만들기 위한 방법은 무엇이 있을까요?
+생명 주기 그림을 자세히 보면 유추할 수 있듯 대표적으로 3가지 방법이 있습니다.
+
+### State object mounted
+
+우선 상태 객체가 mount된 시점에는 기본적으로 dirty 상태가 됩니다.
+
+여기서 mount된 시점이라 하면 상태 객체가 위젯트리에 등록된 상태를 의미합니다.
+
+> `Stateful` 위젯의 build 메서드와 멤버 변수의 사용은 반드시 `mounted == true` 일 때만 동작합니다.
+>
+> 따라서 비동기 함수 내부에서 `context`(위젯 트리)에 접근 시에는 가급적이면 `if(mounted)` 조건문을 달아주는게 안전합니다.
+
+그렇기에 생성자 함수가 호출되면 바로 dirty 상태가 되어 build 함수가 호출되는 것입니다.
+
+### setState
+
+상태 객체는 `setState` 함수를 제공하는데, 해당 함수를 호출하면 dirty 상태가 됩니다.
+
+따라서 함수 객체에서 관리하는 멤버 변수가 변하여 화면을 다시 랜더링 하고 싶은 경우에 `setState` 함수를 호출하면 됩니다.
+
+`setState` 함수는 함수를 인자로 받는데, 사실 멤버 변수의 값을 변화 시키는 시점을 `setState` 함수 내부의 함수에서 하나, `setState` 호출 전에 하나 큰 차이는 없습니다.
+
+### didUpdateWidget
+
+`didUpdateWidget` 함수는 override해서 사용해야 하는 상태 객체의 함수로, 생성자 부분에서 인자로 전달받는 값이 변화했을 때 호출되는 함수입니다.
+
+즉, 상태 객체 내부에서의 변화가 아닌, `Stateful` 위젯 외부에서의 변화를 감지하는 것이죠.
+
+여기서 의문점이 생깁니다.
+
+> ??: 어차피 부모 위젯이 업데이트 되면 알아서 다시 빌드가 되는데 이 함수가 굳이 필요한가요?
+
+만약 상태 객체 내부의 멤버 변수, 즉 상태를 갖고있지 않고, 모든 값을 `widget.blah` 와 같이 사용하여 랜더링 하는 경우에는 필요하지 않습니다.
+
+하지만, 상태 객체가 상태를 갖는 경우에는 부모 위젯이 업데이트 된다 하더라도 상태 객체의 멤버 변수는 초기화(변화) 되지 않습니다.
+
+그렇기에 부모 객체가 변화했을 때, 멤버 변수를 업데이트 해야 하는 경우 이 함수를 사용하게 됩니다.
+
+## initState, dispose
+
+마지막으로 `initState`, `dispose` 함수에 대해 알아봅시다.
+
+상태 객체는 위 두 함수 역시 override 하여 사용할 수 있는데, 언제 호출되는지, 왜 사용하는지 알아봅시다.
+
+`Stateful` 위젯의 상태 객체가 위젯 트리에 등록되는, mount 되는 순간 `initState` 함수가 호출됩니다.
+
+즉, 상태를 초기화 할 때 사용하는 함수입니다.
+
+여기서 의문이 생깁니다.
+
+> ??: 상태 변수를 선언할 때 초기화도 같이하면 필요없지 않나요?
+
+상수 리터럴이나 객체로 초기화 하는 경우에는 필요 없습니다.
+
+하지만,
+
+1. 초기화 해야 하는 데이터를 `context`에 접근해서 가져와야 하는 경우,
+2. 또는 `Stateful` 위젯의 생성자에서 받아오는 변수로 초기화
+   해야하는 경우에 필요합니다.
+
+> 1. `context.read<T>()` 와 같이 사용해야 하는 경우가 있기도 합니다.
+> 2. `widget.blah`
+
+또한, 사용시 주의점으로 함수 내부에서 반드시 `super.initState()`를 호출해야 하는데, 호출 시점은 상태 변수의 초기화 전, 맨 앞에서 호출하는 것이 좋습니다.
+(위젯 트리 구조를 생각하면 올바른 초기화 순서가 뭔지 알 수 있을겁니다)
+
+<br />
+
+다음은 `dispose` 입니다.
+`dispose`는 반대로 상태 객체가 위젯 트리에서 삭제되기 직전에 호출되는 함수입니다.
+
+이 함수에서는 상태 객체 내부의 멤버 변수를 메모리에서 해제해야할 때 사용합니다.
+
+보통 정적인 데이터는 상태 객체가 위젯 트리에서 제거될 때 같이 메모리에서 제거되지만,
+`Controller`, `Ticker`와 같은 객체는 외부 리소스를 참고하기 때문에 `dispose`에서 명시적으로 `controller.dispose` 해줘야 메모리 누수를 방지할 수 있습니다.
+
+또한, 사용시 주의점으로 함수 내부에서 반드시 `super.dispose()`를 호출해야 하는데, 호출 시점은 상태 변수의 해체 후, 맨 뒤에서 호출하는 것이 좋습니다.
+(위젯 트리 구조를 생각하면 올바른 초기화 순서가 뭔지 알 수 있을겁니다)
+
+## 마무리
+
+지금까지 소개한 함수 외에도 `didChangeDependencies`, `deactivate` 와 같은 생명 주기 관련 함수도 있으니 필요에 따라 더 알아보시고 사용하시면 됩니다.
+
+사실 `Controller`나 `Animation`의 활용이 아니면 `Bloc`, `Riverpod` 와 같은 상태 관리 라이브러리와 `Stateless` 조합을 많이 사용하기는 합니다.
+
+하지만, `Stateful` 위젯의 상태 주기를 알아둔다면 더욱 사용자 편의적이고 이쁜 앱을 만드는데 도움이 되는 것은 확실합니다.
+
+그렇기에 `Stateful` 위젯의 사용도 익숙해 지도록 노력합니다!
