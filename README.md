@@ -1,16 +1,72 @@
 # flutter_flirting
 
-A new Flutter project.
+## Intro
 
-## Getting Started
+플러터 플러팅 일곱 번째 세션, 모델링 세션입니다.
 
-This project is a starting point for a Flutter application.
+이번 세션에서는 json 데이터를 어떻게 Dart 클래스로 변환(모델링)하는지 알아보고, 그 반대 과정도 알아보겠습니다.
 
-A few resources to get you started if this is your first Flutter project:
+추가로 deep-copy 구현을 위한 `copyWith` 함수에 대해서도 알아보겠습니다.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Constructor
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+생성자 함수에 대해 알아보기 전에 우선 json 객체의 모델링을 할 때는 가능하면 모든 필드는 nullable로 하는게 좋다는게 제 의견입니다.
+
+왜냐하면 모델은 API 응답에서 사용할 수 있지만, 동시에 사용자로부터 데이터를 입력 받을 때 같은 모델을 재활용해서 사용할 수도 있기 때문입니다.
+(제 의견이니 개발 상황에서 not-null이 보장되는 상황에서는 nullable로 하지 않아도 좋습니다)
+
+아무튼! 생성자는 반드시 구현을 해주고, 가능하면 named-parameter로 만들어줍시다.
+
+## copyWith
+
+`copyWith` 함수는 모델 클래스의 메서드의 이름으로 사실 아무렇게나 지어도 상관 없습니다.
+하지만, 관용적으로 `copyWith` 라는 네이밍을 사용합니다.
+
+`copyWith` 함수는 단순히 생성자 함수를 호출하여 모델 객체를 반환하는 역할을 수행하는데, `copyWith` 함수의 파라미터는 모델 클래스의 모든 필드를 nullable 하게 named-parameter로 받도록 구현합니다.
+
+이렇게 구현한다면, 수정하고자 하는 필드만 파라미터로 넘기는 방식으로 데이터 객체를 수정할 수 있기 때문입니다.
+
+- 수정하고자 하는 필드 -> null이 아니다 -> 파라미터로 넘긴 값이 생성자에 전달
+- 수정이 필요없는 필드 -> 전달 안하니 null 이다 -> 객체의 현재 필드 값이 생성자에 전달
+
+## fromJson
+
+`fromJson`은 named-constructor로 사실 아무렇게나 이름 지어도 되지만 역시 관용적으로 `fromJson`을 사용합니다.
+
+생성자 앞에 `factory` 키워드를 붙인 이유는 생성자의 body 부분을 사용하기 위함입니다.
+
+> 일반적으로 dart의 생성자는 body를 사용할 수 없고 initializer list만 사용 가능합니다.
+>
+> 하지만, initializer list 만으로 코드를 작성하는 것은 어렵고 가독성이 떨어지기 때문에 편안한 개발을 위해 `factory` 키워드를 앞에 붙입니다.
+
+인자로는 json의 기본 형식인 `Map<String, dynamic>` 타입을 받으며, body 부분에서 해당 데이터를 필드에 주입 가능하도록 변환하여 생성자에 집어 넣습니다.
+
+특히 객체(`{}`)가 중첨되어 있는 경우, 해당 데이터를 객체로 하드코딩 하는 것이 아닌, 별도로 모델링을 하여 변수 타입을 모델 클래스로 설정하는 방식을 사용합니다.
+
+이렇게 하면 매번 힘들게 하드코딩할 필요가 없고, 단순히 `fromJson` 메서드를 호출하는 것 만으로도 중첩 객체의 모델링을 수행할 수 있게 됩니다.
+
+## toJson
+
+`toJson`은 모델 클래스의 메서드로 역시 관용적으로 사용하는 이름입니다.
+
+객체를 json으로 변환하는 기능을 수행하며, 이 때는 그냥 객체(`{}`)를 하드코딩하면 됩니다.
+
+중첩된 모델의 경우에도 역시 `toJson` 메서드를 호출하는 것으로 중첩된 json을 구현할 수 있습니다.
+
+## 기타
+
+`toString`이나, `operator ==`를 override 하여 구현한다면 디버깅을 위해 객체를 문자열로 변환하는 형식이나, 객체간 비교를 쉽게 달성할 수 있습니다.
+
+## 마무리
+
+이번 세션을 준비하며 정말 오랜만에 모델링 하는 과정을 하드코딩 해볼 수 있었는데요,
+
+그렇습니다. 사실 이 모든 과정을 알아서 수행하게 해주는 라이브러리가 있습니다.
+
+단순히 json의 직렬화, 역직렬화 과정을 단순히 하고 싶다면 [json_serializable](https://pub.dev/packages/json_serializable) 라이브러리를 사용하면 되고, copyWith 과정까지 단순하게 하고싶다면 [freezed](https://pub.dev/packages/freezed) 라이브러리까지 같이 사용하면 됩니다.
+
+두 라이브러리 모두 처음에는 사용 방법 익숙하지 않겠지만, 잘만 사용한다면 보일러 플레이트 코드를 치는 시간을 획기적으로 단축할 수 있습니다.
+
+물론, 처음부터 이런 라이브러리의 사용을 권장하지는 않습니다.
+
+기초를 단단히 다지고, 개발할 때 귀찮음을 느낄 때 비로소 사용해보시길!
