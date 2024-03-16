@@ -1,16 +1,61 @@
 # flutter_flirting
 
-A new Flutter project.
+## Intro
 
-## Getting Started
+플러터 플러팅 여섯 번째 세션, `Navigator` 세션입니다.
 
-This project is a starting point for a Flutter application.
+이번 세션에서는 화면 전환 방법, 화면간 파라미터 전달 방법에 대해 알아보겠습니다.
 
-A few resources to get you started if this is your first Flutter project:
+## Navigator
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+`Navigator`은 `Route`를 관리하는 클래스로,
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. `Route`를 생성한 뒤에 현재 `Route`에서 `push`, `replace` 할 지,
+2. 혹은 현재 `Route`를 `pop` 할 지
+
+...를 관리하는 클래스입니다.
+
+깊게 말하면 매우 복잡해지지만, `go_router` 라는 라우팅을 편리하게 해주는 패키지도 있고, 페이지 전환 방법에 대해서만 알아보고자 하기 때문에 자주 쓰이는 메서드만 소개하겠습니다.
+(저도 `go_router`를 사용하기 때문에 `Navigator` 자체를 잘 다루지는 못 합니다...)
+
+- push
+
+  현재 `Route` 위에 새로운 `Route`를 스택 쌓듯이 하나 올리는 메서드 입니다.
+
+  어느 `Route`에서 호출하든 위젯 트리 상의 `MaterialApp`의 바로 다음에 새 `Route`가 생성되기 때문에 `context`에서 데이터를 읽어올 때 위젯 트리 구조를 염두해야 합니다.
+
+- replace
+
+  현재 `Route` 위치에 새로운 `Route`를 생성하고, 교체하는 메서드 입니다.
+
+  해당 메서드를 호출하는 `Route`는 새 `Route`로 대체되니 호출 순간 위젯 트리에서 제거됩니다.
+
+- pop
+
+  현재 `Route`를 위젯 트리에서 제거하고, Route 스택의 front Route로 돌아갑니다.
+
+이 외에도 `pushReplacement`, `popUntil` 등 여러 메서드가 있으니 참고하시면 좋을 거 같습니다.
+
+## 값 전달
+
+새 `Route`로 값을 전달할 때는 page 위젯의 파라미터로 값을 넘기면 됩니다.
+
+하지만, `pop` 될 경우에는 값을 어떻게 전달해야 하는 걸까요?
+
+바로 `pop`의 인자로 `context` 외의 전달하고자 하는 값을 넣어주면 됩니다.
+
+> Navigator.pop(context, data);
+
+하지만, 이렇게 값을 전달해도 받지 못하면 소용이 없겠죠..
+
+따라서 값을 전달 받아야 하는 경우에 `Navigator.push()`를 할 때 `await`로 코드 실행을 중지시켜야 합니다.
+
+`Navigator.pop()`이 호출될 때 다시 코드가 실행되기 때문에 이 때 비로소 `Navigator.push()`의 리턴값으로 값이 전달되게 됩니다.
+
+## 마무리
+
+이번 세션은 소개한 내용이 적었습니다.
+
+자세하게 설명하려면 `위젯 트리`와, `key` 등 여러 선수지식이 필요하기 때문이죠... (저도 공부 해야 하는 부분이기도 합니다)
+
+하지만, 위에서 소개한 기능만 활용하면 간단한 페이지 전환을 수행하는데 무리는 없을 것이라 판단되었고, [go_router](https://pub.dev/packages/go_router) 라이브러리를 사용한다면 선수지식이 부족해도 복잡한 라우팅을 구현할 수 있을 것입니다.
